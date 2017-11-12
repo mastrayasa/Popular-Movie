@@ -2,4 +2,23 @@
 <resources>
     <dimen name="globalPadding">16dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+
+
+
+    <!-- margins -->
+    <dimen name="margin_fab">16dp</dimen>
+    <dimen name="margin_inline">4dp</dimen>
+    <dimen name="margin_default">8dp</dimen>
+    <dimen name="margin_large">16dp</dimen>
+
+    <!-- specific view dimensions and spacing -->
+    <dimen name="details_backdrop_height">220dp</dimen>
+    <dimen name="details_poster_width">100dp</dimen>
+    <dimen name="details_poster_height">150dp</dimen>
+    <dimen name="details_poster_margin_top">192dp</dimen>
+
+    <!-- misc dimensions -->
+    <item name="body_text_line_spacing" format="float" type="dimen">1.15</item>
 </resources>

@@ -2,7 +2,6 @@ package com.sibangstudio.popularmovie.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -107,10 +106,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
 
 
         String image = "http://image.tmdb.org/t/p/w500" + dir.getPoster_path();
-        Log.e("image", image);
+       // Log.e("image", image);
         Picasso.with(activity)
                 .load(image)
-
                 .into(viewHolder.imgDir);
         viewHolder.bind(position);
     }
@@ -129,6 +127,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
 
         //Log.d(TAG, "Besar" + dirItems.size());
         return dirItems.size();
+    }
+
+    public void clearData() {
+        int size = this.dirItems.size();
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                dirItems.remove(0);
+            }
+
+            this.notifyItemRangeRemoved(0, size);
+        }
     }
 
     public void setDirData(List<MovieData> weatherData) {
@@ -186,8 +195,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
         @Override
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
-            String weatherForDay = dir.getTitle();
-            mClickHandler.onClick(weatherForDay);
+           // String weatherForDay = dir.getTitle();
+            mClickHandler.onClick(dirItems.get(adapterPosition));
         }
     }
 
@@ -199,7 +208,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
      * The interface that receives onClick messages.
      */
     public interface DirAdapterOnClickHandler {
-        void onClick(String weatherForDay);
+        void onClick(MovieData weatherForDay);
     }
 
     /**

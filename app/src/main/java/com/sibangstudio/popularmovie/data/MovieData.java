@@ -1,19 +1,22 @@
 package com.sibangstudio.popularmovie.data;
 
+import java.io.Serializable;
+
 /**
  * Created by wayanmastrayasa on 11/12/17.
  */
 
-public class MovieData {
+public class MovieData implements Serializable {
 
-    public String id;
-    public String vote_average;
-    public String title;
-    public String popularity;
-    public String poster_path;
-    public String original_title;
-    public String backdrop_path;
-    public String overview;
+    private String id;
+    private String vote_average;
+    private String title;
+    private String popularity;
+    private String poster_path;
+    private String original_title;
+    private String backdrop_path;
+    private String overview;
+    private String release_date;
 
 
 
@@ -79,5 +82,13 @@ public class MovieData {
 
     public void setOverview(String overview) {
         this.overview = overview;
+    }
+
+    public String getRelease_date() {
+        return release_date;
+    }
+
+    public void setRelease_date(String release_date) {
+        this.release_date = release_date;
     }
 }

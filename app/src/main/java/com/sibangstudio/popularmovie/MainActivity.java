@@ -1,15 +1,17 @@
 package com.sibangstudio.popularmovie;
 
-import android.content.Context;
+import android.content.Intent;
 import android.net.ParseException;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,7 +35,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler  {
 
-    final static String BASE_URL = "https://infosulteng.com/api";
+    final static String BASE_URL = "http://api.themoviedb.org/3/";
+
+    final static  String API_KEY = "b5481a85cbb44c13c6c6931834845104";
 
     private static final int NUM_LIST_ITEMS = 100;
 
@@ -108,29 +112,48 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         mRecyclerView.setAdapter(mAdapter);
 
 
+        loadPopularMovie();
 
-        loadDirData();
+    }
+
+
+
+    private void loadPopularMovie(){
+       Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendPath("movie")
+                .appendPath("popular")
+                .appendQueryParameter("api_key",API_KEY)
+                .build();
+
+        loadDirData(builtUri.toString());
+    }
+
+    private void loadMovieByRating(){
+        //http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=###&page=1
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendPath("discover")
+                .appendPath("movie")
+                .appendQueryParameter("sort_by","vote_average.desc")
+                .appendQueryParameter("api_key",API_KEY)
+                .build();
+
+        loadDirData(builtUri.toString());
     }
 
     /**
      * This method will get the user's preferred location for weather, and then tell some
      * background method to get the weather data in the background.
      */
-    private void loadDirData() {
+    private void loadDirData(String url) {
         showDirDataView();
+
+        Log.d("URL",url);
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-                .appendPath("dir")
-                .appendPath("terbaru")
-                .build();
-
-        String susu = "http://api.themoviedb.org/3/movie/popular?api_key=b5481a85cbb44c13c6c6931834845104";
-
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, susu,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -200,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
                         MovieData aha = MyFunction.setDariJson(json_data);
 
                         dirList.add(aha);
-                        Log.e("Add", aha.getTitle());
+                        //Log.e("Add", aha.getTitle());
                     }
 
                     mAdapter.setDirData(dirList);
@@ -217,10 +240,49 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     }
 
     @Override
-    public void onClick(String weatherForDay) {
+    public void onClick(MovieData data) {
+
+        /*Log.e("Movie",data.getTitle());
         Context context = this;
-        Toast.makeText(context, weatherForDay, Toast.LENGTH_SHORT)
-                .show();
+        Toast.makeText(context, data.getTitle(), Toast.LENGTH_SHORT)
+                .show();*/
+
+        Intent ed = new Intent(this, MovieDetail.class);
+        ed.putExtra("movie",  data);
+        startActivity(ed);
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        /* Use AppCompatActivity's method getMenuInflater to get a handle on the menu inflater */
+        MenuInflater inflater = getMenuInflater();
+        /* Use the inflater's inflate method to inflate our menu layout to this menu */
+        inflater.inflate(R.menu.main, menu);
+        /* Return true so that the menu is displayed in the Toolbar */
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_sort_by_popular) {
+            mAdapter.clearData();
+
+            loadPopularMovie();
+            return true;
+        }
+
+        else if (id == R.id.action_sort_by_rating) {
+            mAdapter.clearData();
+
+            loadMovieByRating();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 

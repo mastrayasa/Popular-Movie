@@ -11,38 +11,35 @@ import com.sibangstudio.popularmovie.data.MovieData;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-
 
 public class MyFunction {
 
+    public static final String TAG_ID = "id";
+    public static final String TAG_VOTE_AVERAGE = "vote_average";
+    public static final String TAG_POPULARITY = "popularity";
+    public static final String TAG_ORIGINAL_TITLE = "original_title";
+    public static final String TAG_BACKDROP_PARH = "backdrop_path";
+    public static final String TAG_RELEASE_DATE = "release_date";
     public static final String TAG_TITLE = "title";
     public static final String TAG_POSTER = "poster_path";
     public static final String TAG_OVERVIEW = "overview";
-    public static String rupiah(int harga){
 
 
-        DecimalFormat kursIndonesia = (DecimalFormat) DecimalFormat.getCurrencyInstance();
-        DecimalFormatSymbols formatRp = new DecimalFormatSymbols();
 
-        formatRp.setCurrencySymbol("Rp. ");
-        formatRp.setMonetaryDecimalSeparator(',');
-        formatRp.setGroupingSeparator('.');
+    public static MovieData setDariJson(JSONObject data){
 
-        kursIndonesia.setDecimalFormatSymbols(formatRp);
+        MovieData movie = new MovieData();
 
-        return kursIndonesia.format(harga);
-
-    }
-
-
-    public static MovieData setDariJson(JSONObject json_data){
-        MovieData dirs = new MovieData();
         try {
-            dirs.setTitle(json_data.getString(TAG_TITLE));
-            dirs.setPoster_path(json_data.getString(TAG_POSTER));
-            dirs.setOverview(json_data.getString(TAG_OVERVIEW));
+            movie.setId(data.getString(TAG_ID));
+            movie.setVote_average(data.getString(TAG_VOTE_AVERAGE));
+            movie.setPopularity(data.getString(TAG_POPULARITY));
+            movie.setOriginal_title(data.getString(TAG_ORIGINAL_TITLE));
+            movie.setBackdrop_path(data.getString(TAG_BACKDROP_PARH));
+            movie.setRelease_date(data.getString(TAG_RELEASE_DATE));
+            movie.setTitle(data.getString(TAG_TITLE));
+            movie.setPoster_path(data.getString(TAG_POSTER));
+            movie.setOverview(data.getString(TAG_OVERVIEW));
 
 
         } catch (JSONException e1) {
@@ -51,6 +48,6 @@ public class MyFunction {
             e1.printStackTrace();
         }
 
-        return dirs;
+        return movie;
     }
 }

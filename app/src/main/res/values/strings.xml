@@ -1,4 +1,24 @@
 <resources>
-    <string name="app_name">PopularMovie</string>
+    <string name="app_name">Popular Movie</string>
     <string name="error_message">Error Bero</string>
+    <string name="action_sort_by_popular">by popular movie</string>
+    <string name="action_sort_by_rating">by rating</string>
+    <string name="title_activity_movie_detail">MovieDetail</string>
+    <string name="action_share">Share</string>
+    <string name="send_to">Share</string>
+
+
+
+
+    <string name="api_error">Error while fetching data</string>
+    <string name="sort_by">Sort By</string>
+    <string name="sort_popularity">Sort by Most Popular</string>
+    <string name="sort_rating">Sort by Highest Rated</string>
+
+    <string name="title_activity_movie_details">Movie</string>
+    <string name="rating_denominator">/10</string>
+
+    <!-- Content descriptions for accessibility -->
+    <string name="content_desc_movie_poster">Movie poster</string>
+    <string name="content_desc_backdrop_image">Movie backdrop image</string>
 </resources>
