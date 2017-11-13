@@ -35,6 +35,7 @@ import com.sibangstudio.popularmovie.data.MovieData;
 import com.sibangstudio.popularmovie.data.MovieDbHelper;
 import com.sibangstudio.popularmovie.data.ReviewData;
 import com.sibangstudio.popularmovie.data.TrailerData;
+import com.sibangstudio.popularmovie.helper.MyFunction;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -75,15 +76,15 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        setTitle("Detail Movie");
+        setTitle(getResources().getString(R.string.detail_title));
 
         Intent intent = getIntent();
         movie = (MovieData) intent.getSerializableExtra("movie");
 
 
 
-         txtErrorTrailer = (TextView) findViewById(R.id.txtErrorTrailer);
-         txtErrorReview = (TextView) findViewById(R.id.txtErrorReview);
+        txtErrorTrailer = (TextView) findViewById(R.id.txtErrorTrailer);
+        txtErrorReview = (TextView) findViewById(R.id.txtErrorReview);
 
 
         TextView txtTitle = (TextView) findViewById(R.id.txtTitle);
@@ -102,6 +103,7 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
         String image = "http://image.tmdb.org/t/p/w154" + movie.getPoster_path();
         Picasso.with(this)
                 .load(image)
+                .placeholder(R.drawable.poster_placeholder)
                 .into(imgPoster);
 
         String image2 = "http://image.tmdb.org/t/p/w500" + movie.getBackdrop_path();
@@ -162,6 +164,8 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
 
         reviewAdapter = new ReviewAdapter(MovieDetail.this, (ReviewAdapter.DirAdapterOnClickHandler) this);
         mRecyclerViewReview.setAdapter(reviewAdapter);
+
+        mRecyclerViewReview.setNestedScrollingEnabled(false);
 
 
 
@@ -310,7 +314,7 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
         JSONArray jArray = null;
         JSONObject resultRoot = null;
         JSONObject json_data = null;
-        JSONObject json_Detail = null;
+        //JSONObject json_Detail = null;
 
         try {
 
@@ -409,6 +413,7 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
             if (!(cursor.moveToFirst()) || cursor.getCount() == 0) {
 
                 ContentValues cv = new ContentValues();
+                cv.put(MovieContract.MovieEntry.COLUMN_ID, data.getId());
                 cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, data.getVote_average());
                 cv.put(MovieContract.MovieEntry.COLUMN_TITLE, data.getTitle());
                 cv.put(MovieContract.MovieEntry.COLUMN_POPULARITY, data.getPopularity());

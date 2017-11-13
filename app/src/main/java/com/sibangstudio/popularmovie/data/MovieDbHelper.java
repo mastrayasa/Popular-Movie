@@ -16,7 +16,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "movies.db";
 
     // If you change the database schema, you must increment the database version
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     // Constructor
     public MovieDbHelper(Context context) {
@@ -29,6 +29,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         // Create a table to hold waitlist data
         final String SQL_CREATE_WAITLIST_TABLE = "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
                 MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                MovieEntry.COLUMN_ID + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_VOTE_AVERAGE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_POPULARITY + " TEXT NOT NULL, " +

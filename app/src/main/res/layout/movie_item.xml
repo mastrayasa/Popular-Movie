@@ -15,6 +15,26 @@
         android:adjustViewBounds="true"
         android:scaleType="fitXY" />
 
+    <View
+        android:layout_alignBottom="@+id/imgViewDirCat"
+        android:layout_alignParentRight="true"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/gradient" />
+
+    <TextView
+        android:id="@+id/txtCaret"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imgViewDirCat"
+        android:layout_alignParentRight="true"
+        android:text="0.0 / yyyy"
+        android:paddingBottom="@dimen/margin_default"
+        android:paddingRight="@dimen/margin_default"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="visible"/>
+
 
     <View
         android:id="@+id/title_background"

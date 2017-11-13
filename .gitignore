@@ -11,6 +11,7 @@ build/
 /.idea/libraries
 .DS_Store
 /build
+/app/release
 /captures
 .externalNativeBuild
 >>>>>>> 678a18632dc41bda751f990f8a8c6e6e236d8daa

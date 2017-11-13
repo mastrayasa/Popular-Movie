@@ -1,4 +1,4 @@
-package com.sibangstudio.popularmovie;
+package com.sibangstudio.popularmovie.helper;
 
 /**
  * Created by wayanmastrayasa on 11/12/17.

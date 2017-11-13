@@ -29,4 +29,7 @@
     <string name="detail_sonopsis_label">Sinopsis</string>
     <string name="review_empty_label">Belum ada komentar untuk film ini</string>
     <string name="trailer_empty_label">Trailer tidak tersedia</string>
+    <string name="detail_title">Detail Movie</string>
+    <string name="titleRating">Top Rating Movie</string>
+    <string name="titleFavorite">My Favorite Movie</string>
 </resources>

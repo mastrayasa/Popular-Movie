@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,6 +31,7 @@ import com.sibangstudio.popularmovie.adapter.MovieAdapter;
 import com.sibangstudio.popularmovie.data.MovieContract;
 import com.sibangstudio.popularmovie.data.MovieData;
 import com.sibangstudio.popularmovie.data.MovieDbHelper;
+import com.sibangstudio.popularmovie.helper.MyFunction;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,13 +40,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler  {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler, SwipeRefreshLayout.OnRefreshListener {
 
     final static String BASE_URL = "http://api.themoviedb.org/3/";
 
-    final static  String API_KEY = "b5481a85cbb44c13c6c6931834845104";
-
-
+    final static String API_KEY = "b5481a85cbb44c13c6c6931834845104";
 
     private final static String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -54,12 +55,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     private MovieAdapter mAdapter;
     private RecyclerView mRecyclerView;
 
+    SwipeRefreshLayout swipe;
+
     private TextView mErrorMessageDisplay;
 
     private ProgressBar mLoadingIndicator;
 
     List<MovieData> dirList = new ArrayList<MovieData>();
-
 
     private SQLiteDatabase mDb;
 
@@ -68,10 +70,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     JSONObject json_data = null;
     JSONObject json_Detail = null;
 
+    private int page = 1;
+
+    String mode = "popular";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        swipe = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        swipe.setOnRefreshListener(this);
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -107,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
-        GridLayoutManager layoutGrid = new GridLayoutManager(this,2);
+        GridLayoutManager layoutGrid = new GridLayoutManager(this, 2);
 
         mRecyclerView.setLayoutManager(layoutGrid);
 
@@ -117,8 +127,22 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
          */
         mRecyclerView.setHasFixedSize(true);
 
-        mAdapter = new MovieAdapter(MainActivity.this, this);
+        mAdapter = new MovieAdapter(MainActivity.this, this, mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);
+
+
+        mAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+                Log.e(LOG_TAG, "Load More " + page);
+
+                if (mode.equals("popular")) {
+                    loadPopularMovie();
+                } else if (mode.equals("rating")) {
+                    loadMovieByRating();
+                }
+            }
+        });
 
 
         loadPopularMovie();
@@ -134,37 +158,43 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     }
 
 
+    private void loadPopularMovie() {
 
-    private void loadPopularMovie(){
-       Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+        mode = "popular";
+
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath("movie")
                 .appendPath("popular")
-                .appendQueryParameter("api_key",API_KEY)
+                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter("page", String.valueOf(page))
                 .build();
 
-        loadDirData(builtUri.toString());
+        loadMovieData(builtUri.toString());
     }
 
-    private void loadMovieByRating(){
+    private void loadMovieByRating() {
+
+        mode = "rating";
+
         //http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=###&page=1
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath("discover")
                 .appendPath("movie")
-                .appendQueryParameter("sort_by","vote_average.desc")
-                .appendQueryParameter("api_key",API_KEY)
+                .appendQueryParameter("sort_by", "vote_average.desc")
+                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter("page", String.valueOf(page))
                 .build();
 
-        loadDirData(builtUri.toString());
+        loadMovieData(builtUri.toString());
     }
 
     /**
      * This method will get the user's preferred location for weather, and then tell some
      * background method to get the weather data in the background.
      */
-    private void loadDirData(String url) {
-        showDirDataView();
+    private void loadMovieData(String url) {
 
-        Log.d("URL",url);
+        Log.d(LOG_TAG, url);
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -180,8 +210,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                showErrorMessage();
-                mErrorMessageDisplay.setText(  error.getMessage() );
+                showErrorMessage(error.getMessage());
+
             }
         });
 
@@ -196,11 +226,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
      *
      * @return Cursor containing the list of guests
      */
-    public void  loadFavoriteMovies() {
+    public void loadFavoriteMovies() {
+
+        mode = "favorite";
+
+        showDirDataView();
 
         Log.e(LOG_TAG, "loadFavoriteMovies");
 
-        Cursor cursor =  mDb.query(
+        Cursor cursor = mDb.query(
                 MovieContract.MovieEntry.TABLE_NAME,
                 null,
                 null,
@@ -220,14 +254,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
 
                     MovieData movie = new MovieData();
-                    movie.setVote_average( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE )) );
-                    movie.setTitle( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_TITLE )) );
-                    movie.setPopularity( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_POPULARITY )) );
-                    movie.setPoster_path( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_POASTER_PATH )) );
-                    movie.setOriginal_title( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE )) );
-                    movie.setBackdrop_path( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_BACKDROP_PATH )) );
-                    movie.setOverview( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_OVERVIEW )) );
-                    movie.setRelease_date( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_RELEASE_DATE )) );
+                    movie.setId(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ID)));
+                    movie.setVote_average(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE)));
+                    movie.setTitle(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+                    movie.setPopularity(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POPULARITY)));
+                    movie.setPoster_path(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POASTER_PATH)));
+                    movie.setOriginal_title(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE)));
+                    movie.setBackdrop_path(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)));
+                    movie.setOverview(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
+                    movie.setRelease_date(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
 
                     dirList.add(movie);
 
@@ -237,76 +272,46 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
                 mAdapter.setDirData(dirList);
 
-            }else{
+            } else {
                 Log.e(LOG_TAG, "no move");
+                showErrorMessage("Anda belum memilih film favorit anda");
             }
             cursor.close();
-
-
-
-
-        }
-        else{
+        } else {
             Log.e(LOG_TAG, "cursor null");
         }
-    }
-
-    /**
-     * This method will make the View for the weather data visible and
-     * hide the error message.
-     * <p>
-     * Since it is okay to redundantly set the visibility of a View, we don't
-     * need to check whether each view is currently visible or invisible.
-     */
-    private void showDirDataView() {
-        /* First, make sure the error is invisible */
-        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        /* Then, make sure the weather data is visible */
-        mRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * This method will make the error message visible and hide the weather
-     * View.
-     * <p>
-     * Since it is okay to redundantly set the visibility of a View, we don't
-     * need to check whether each view is currently visible or invisible.
-     */
-    private void showErrorMessage() {
-        /* First, hide the currently visible data */
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        /* Then, show the error */
-        mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
 
     public void olahData(String s) {
 
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-
+        showDirDataView();
 
         try {
 
             resultRoot = new JSONObject(s);
 
-                jArray = resultRoot.getJSONArray("results");
+            jArray = resultRoot.getJSONArray("results");
 
 
-                // deklarasikan panjang array sejumlah array jarray
+            // deklarasikan panjang array sejumlah array jarray
 
-                if (jArray.length() > 0) {
-                    for (int i = 0; i < jArray.length(); i++) {
-                        json_data = jArray.getJSONObject(i);
+            if (jArray.length() > 0) {
+                for (int i = 0; i < jArray.length(); i++) {
+                    json_data = jArray.getJSONObject(i);
 
-                        MovieData aha = MyFunction.setDariJson(json_data);
+                    MovieData aha = MyFunction.setDariJson(json_data);
 
-                        dirList.add(aha);
-                        //Log.e("Add", aha.getTitle());
-                    }
-
-                    mAdapter.setDirData(dirList);
+                    dirList.add(aha);
+                    //Log.e("Add", aha.getTitle());
                 }
 
+                mAdapter.setDirData(dirList);
+
+                mAdapter.setLoaded();
+
+                page++;
+            }
 
 
         } catch (JSONException e1) {
@@ -326,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
                 .show();*/
 
         Intent ed = new Intent(this, MovieDetail.class);
-        ed.putExtra("movie",  data);
+        ed.putExtra("movie", data);
         startActivity(ed);
 
     }
@@ -346,27 +351,85 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         int id = item.getItemId();
 
         if (id == R.id.action_sort_by_popular) {
+            if (!mode.equals("popular")) {
+
+                setTitle(getResources().getString(R.string.app_name));
+
+                mAdapter.clearData();
+                page = 1;
+                loadPopularMovie();
+                return true;
+            }
+        } else if (id == R.id.action_sort_by_rating) {
+
+            if (!mode.equals("rating")) {
+
+                setTitle(getResources().getString(R.string.titleRating));
+
+                mAdapter.clearData();
+                page = 1;
+                loadMovieByRating();
+                return true;
+            }
+        } else if (id == R.id.action_sort_by_favorite) {
             mAdapter.clearData();
 
-            loadPopularMovie();
-            return true;
-        }
-
-        else if (id == R.id.action_sort_by_rating) {
-            mAdapter.clearData();
-
-            loadMovieByRating();
-            return true;
-        }
-
-        else if (id == R.id.action_sort_by_favorite) {
-            mAdapter.clearData();
+            setTitle(getResources().getString(R.string.titleFavorite));
 
             loadFavoriteMovies();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void onRefresh() {
+        dirList.clear();
+        page = 1;
+        swipe.setRefreshing(false);
+
+        if (mode.equals("popular")) {
+            loadPopularMovie();
+        } else if (mode.equals("rating")) {
+            loadMovieByRating();
+        } else {
+            loadFavoriteMovies();
+        }
+
+    }
+
+
+    /**
+     * This method will make the View for the weather data visible and
+     * hide the error message.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showDirDataView() {
+        /* First, make sure the error is invisible */
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        /* Then, make sure the weather data is visible */
+        mRecyclerView.setVisibility(View.VISIBLE);
+
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+    }
+
+    /**
+     * This method will make the error message visible and hide the weather
+     * View.
+     * <p>
+     * Since it is okay to redundantly set the visibility of a View, we don't
+     * need to check whether each view is currently visible or invisible.
+     */
+    private void showErrorMessage(String msg) {
+        /* First, hide the currently visible data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Then, show the error */
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+        mErrorMessageDisplay.setText(msg);
     }
 
 
