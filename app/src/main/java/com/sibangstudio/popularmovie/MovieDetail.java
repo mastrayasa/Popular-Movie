@@ -28,10 +28,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.sibangstudio.popularmovie.adapter.ReviewAdapter;
 import com.sibangstudio.popularmovie.adapter.TrailerAdapter;
 import com.sibangstudio.popularmovie.data.MovieContract;
 import com.sibangstudio.popularmovie.data.MovieData;
 import com.sibangstudio.popularmovie.data.MovieDbHelper;
+import com.sibangstudio.popularmovie.data.ReviewData;
 import com.sibangstudio.popularmovie.data.TrailerData;
 import com.squareup.picasso.Picasso;
 
@@ -42,7 +44,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MovieDetail extends AppCompatActivity implements TrailerAdapter.DirAdapterOnClickHandler {
+public class MovieDetail extends AppCompatActivity implements TrailerAdapter.DirAdapterOnClickHandler, ReviewAdapter.DirAdapterOnClickHandler {
 
 
     MovieData movie;
@@ -51,10 +53,17 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
 
     private TrailerAdapter mAdapter;
     private RecyclerView mRecyclerView;
-
     List<TrailerData> TrailerList = new ArrayList<TrailerData>();
 
+
+    private ReviewAdapter reviewAdapter;
+    private RecyclerView mRecyclerViewReview;
+    List<ReviewData> reviewList = new ArrayList<ReviewData>();
+
     private final static String LOG_TAG = MovieDetail.class.getSimpleName();
+
+    TextView txtErrorTrailer;
+    TextView txtErrorReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +79,11 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
 
         Intent intent = getIntent();
         movie = (MovieData) intent.getSerializableExtra("movie");
+
+
+
+         txtErrorTrailer = (TextView) findViewById(R.id.txtErrorTrailer);
+         txtErrorReview = (TextView) findViewById(R.id.txtErrorReview);
 
 
         TextView txtTitle = (TextView) findViewById(R.id.txtTitle);
@@ -115,9 +129,111 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
 
 
         createTrailer(movie.getId());
+
+        createReview(movie.getId());
+    }
+
+    private void createReview(String id){
+
+
+
+
+
+        /*
+         * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
+         * do things like set the adapter of the RecyclerView and toggle the visibility.
+         */
+        mRecyclerViewReview = (RecyclerView) findViewById(R.id.rv_review);
+
+
+
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+
+
+        mRecyclerViewReview.setLayoutManager(layoutManager);
+
+        /*
+         * Use this setting to improve performance if you know that changes in content do not
+         * change the child layout size in the RecyclerView
+         */
+        mRecyclerViewReview.setHasFixedSize(true);
+
+        reviewAdapter = new ReviewAdapter(MovieDetail.this, (ReviewAdapter.DirAdapterOnClickHandler) this);
+        mRecyclerViewReview.setAdapter(reviewAdapter);
+
+
+
+
+
+
+        String url = "http://api.themoviedb.org/3/movie/" + id + "/reviews?api_key=b5481a85cbb44c13c6c6931834845104";
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        olahDataReview(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
 
+    public void olahDataReview(String s) {
+
+        JSONArray jArray = null;
+        JSONObject resultRoot = null;
+        JSONObject json_data = null;
+        JSONObject json_Detail = null;
+
+        try {
+
+            resultRoot = new JSONObject(s);
+
+            jArray = resultRoot.getJSONArray("results");
+
+
+            // deklarasikan panjang array sejumlah array jarray
+
+            if (jArray.length() > 0) {
+                for (int i = 0; i < jArray.length(); i++) {
+                    json_data = jArray.getJSONObject(i);
+
+                    ReviewData data = MyFunction.setReviewFromJson(json_data);
+
+                    reviewList.add(data);
+                    //Log.e("Add", aha.getTitle());
+                }
+
+                reviewAdapter.setDirData(reviewList);
+            }else{
+                txtErrorReview.setVisibility(View.VISIBLE);
+                mRecyclerViewReview.setVisibility(View.GONE);
+            }
+
+
+
+        } catch (JSONException e1) {
+            Toast.makeText(getBaseContext(), "Opsss...", Toast.LENGTH_LONG)
+                    .show();
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+    }
 
     private void createTrailer(String id){
 
@@ -216,6 +332,9 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
                 }
 
                 mAdapter.setDirData(TrailerList);
+            }else{
+                txtErrorTrailer.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
             }
 
 
@@ -321,5 +440,10 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
         Uri uri = Uri.parse("https://www.youtube.com/watch?v=" + data.getKey());
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
+    }
+
+    @Override
+    public void onClick(ReviewData weatherForDay) {
+
     }
 }

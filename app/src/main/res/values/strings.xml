@@ -25,4 +25,8 @@
     <string name="saveToFavorite">saved to your favorites list</string>
     <string name="alreadyOnFavorite">already in your favorites</string>
     <string name="detail_trailer_label">Trailer</string>
+    <string name="detail_review_label">Review</string>
+    <string name="detail_sonopsis_label">Sinopsis</string>
+    <string name="review_empty_label">Belum ada komentar untuk film ini</string>
+    <string name="trailer_empty_label">Trailer tidak tersedia</string>
 </resources>

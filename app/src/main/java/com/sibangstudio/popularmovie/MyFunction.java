@@ -7,6 +7,7 @@ package com.sibangstudio.popularmovie;
 import android.net.ParseException;
 
 import com.sibangstudio.popularmovie.data.MovieData;
+import com.sibangstudio.popularmovie.data.ReviewData;
 import com.sibangstudio.popularmovie.data.TrailerData;
 
 import org.json.JSONException;
@@ -25,6 +26,28 @@ public class MyFunction {
     public static final String TAG_POSTER = "poster_path";
     public static final String TAG_OVERVIEW = "overview";
 
+
+
+    public static ReviewData setReviewFromJson(JSONObject data){
+
+        ReviewData trailer = new ReviewData();
+
+        try {
+
+            trailer.setId(data.getString("id"));
+            trailer.setAuthor(data.getString("author"));
+            trailer.setContent(data.getString("content"));
+            trailer.setUrl(data.getString("url"));
+
+
+        } catch (JSONException e1) {
+
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+
+        return trailer;
+    }
 
 
     public static TrailerData setTrailerFromJson(JSONObject data){

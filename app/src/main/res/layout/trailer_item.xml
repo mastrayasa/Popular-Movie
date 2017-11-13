@@ -6,7 +6,7 @@
     android:layout_height="120dp"
     android:layout_gravity="center"
     android:clickable="true"
-    android:layout_marginRight="16dp"
+    android:layout_marginLeft="@dimen/globalPadding"
     android:foreground="?attr/selectableItemBackground">
 
     <ImageView
