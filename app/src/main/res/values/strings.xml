@@ -21,4 +21,8 @@
     <!-- Content descriptions for accessibility -->
     <string name="content_desc_movie_poster">Movie poster</string>
     <string name="content_desc_backdrop_image">Movie backdrop image</string>
+    <string name="action_sort_by_favorite">Favorite</string>
+    <string name="saveToFavorite">saved to your favorites list</string>
+    <string name="alreadyOnFavorite">already in your favorites</string>
+    <string name="detail_trailer_label">Trailer</string>
 </resources>

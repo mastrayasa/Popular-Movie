@@ -1,6 +1,8 @@
 package com.sibangstudio.popularmovie;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +26,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.sibangstudio.popularmovie.adapter.MovieAdapter;
+import com.sibangstudio.popularmovie.data.MovieContract;
 import com.sibangstudio.popularmovie.data.MovieData;
+import com.sibangstudio.popularmovie.data.MovieDbHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +43,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
     final static  String API_KEY = "b5481a85cbb44c13c6c6931834845104";
 
-    private static final int NUM_LIST_ITEMS = 100;
+
+
+    private final static String LOG_TAG = MainActivity.class.getSimpleName();
 
     /*
      * References to RecyclerView and Adapter to reset the list to its
@@ -53,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     private ProgressBar mLoadingIndicator;
 
     List<MovieData> dirList = new ArrayList<MovieData>();
+
+
+    private SQLiteDatabase mDb;
 
     JSONArray jArray = null;
     JSONObject resultRoot = null;
@@ -114,6 +123,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
         loadPopularMovie();
 
+
+        // Create a DB helper (this will create the DB if run for the first time)
+        MovieDbHelper dbHelper = new MovieDbHelper(this);
+
+        // Keep a reference to the mDb until paused or killed. Get a writable database
+        // because you will be adding restaurant customers
+        mDb = dbHelper.getWritableDatabase();
+
     }
 
 
@@ -173,6 +190,67 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         queue.add(stringRequest);
     }
 
+
+    /**
+     * Query the mDb and get all guests from the waitlist table
+     *
+     * @return Cursor containing the list of guests
+     */
+    public void  loadFavoriteMovies() {
+
+        Log.e(LOG_TAG, "loadFavoriteMovies");
+
+        Cursor cursor =  mDb.query(
+                MovieContract.MovieEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                MovieContract.MovieEntry.COLUMN_TIMESTAMP
+        );
+
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+
+                mAdapter.clearData();
+
+                do {
+
+
+                    MovieData movie = new MovieData();
+                    movie.setVote_average( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE )) );
+                    movie.setTitle( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_TITLE )) );
+                    movie.setPopularity( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_POPULARITY )) );
+                    movie.setPoster_path( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_POASTER_PATH )) );
+                    movie.setOriginal_title( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE )) );
+                    movie.setBackdrop_path( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_BACKDROP_PATH )) );
+                    movie.setOverview( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_OVERVIEW )) );
+                    movie.setRelease_date( cursor.getString(cursor.getColumnIndex( MovieContract.MovieEntry.COLUMN_RELEASE_DATE )) );
+
+                    dirList.add(movie);
+
+                    Log.e(LOG_TAG, "add dir");
+
+                } while (cursor.moveToNext());
+
+                mAdapter.setDirData(dirList);
+
+            }else{
+                Log.e(LOG_TAG, "no move");
+            }
+            cursor.close();
+
+
+
+
+        }
+        else{
+            Log.e(LOG_TAG, "cursor null");
+        }
+    }
+
     /**
      * This method will make the View for the weather data visible and
      * hide the error message.
@@ -203,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
 
     public void olahData(String s) {
-        //Log.e("log_tag", s);
+
         mLoadingIndicator.setVisibility(View.INVISIBLE);
 
 
@@ -251,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         ed.putExtra("movie",  data);
         startActivity(ed);
 
-
     }
 
     @Override
@@ -279,6 +356,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
             mAdapter.clearData();
 
             loadMovieByRating();
+            return true;
+        }
+
+        else if (id == R.id.action_sort_by_favorite) {
+            mAdapter.clearData();
+
+            loadFavoriteMovies();
             return true;
         }
 

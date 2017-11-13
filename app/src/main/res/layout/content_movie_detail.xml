@@ -125,6 +125,36 @@
                     tools:text="With the nation of Panem in a full scale war, Katniss confronts President Snow in the final showdown. Teamed with a group of her closest friends – including Gale, Finnick, and Peeta – Katniss goes off on a mission with the unit from District 13 as they risk their lives to stage an assassination attempt on President Snow who has become increasingly obsessed with destroying her. The mortal traps, enemies, and moral choices that await Katniss will challenge her more than any arena she faced in The Hunger Games."
                     />
 
+
+
+                <LinearLayout
+                    android:id="@+id/trailer_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtOverview"
+                    android:gravity="bottom"
+                    android:layout_marginLeft="@dimen/margin_large"
+                    android:layout_marginStart="@dimen/margin_large"
+                    android:layout_marginRight="@dimen/margin_large"
+                    android:layout_marginEnd="@dimen/margin_large"
+                    android:orientation="vertical"
+                    android:clipChildren="false">
+
+                    <TextView
+                        android:layout_marginTop="@dimen/margin_large"
+                        android:layout_width="wrap_content"
+                        android:layout_marginBottom="@dimen/globalPadding"
+                        android:text="@string/detail_trailer_label"
+                        android:layout_height="wrap_content" />
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/rv_trailer"
+                        android:clickable="true"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </LinearLayout>
+
+
             </RelativeLayout>
 
         </ScrollView>
