@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.sibangstudio.popularmovie.MainActivity;
 import com.sibangstudio.popularmovie.OnLoadMoreListener;
 import com.sibangstudio.popularmovie.R;
 import com.sibangstudio.popularmovie.data.MovieData;
@@ -44,7 +43,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
     private final int VIEW_TYPE_LOADING = 1;
 
 
-    public MovieAdapter(Activity activity,  DirAdapterOnClickHandler mClickHandler, RecyclerView mRecyclerView) {
+    public MovieAdapter(Activity activity, DirAdapterOnClickHandler mClickHandler, RecyclerView mRecyclerView) {
         this.activity = activity;
         this.mClickHandler = mClickHandler;
 
@@ -90,29 +89,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
      */
     @Override
     public NumberViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-            Context context = viewGroup.getContext();
-            int layoutIdForListItem = R.layout.movie_item;
-            LayoutInflater inflater = LayoutInflater.from(context);
-            boolean shouldAttachToParentImmediately = false;
+        Context context = viewGroup.getContext();
+        int layoutIdForListItem = R.layout.movie_item;
+        LayoutInflater inflater = LayoutInflater.from(context);
+        boolean shouldAttachToParentImmediately = false;
 
-            View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
-            NumberViewHolder viewHolder = new NumberViewHolder(view);
+        View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
+        NumberViewHolder viewHolder = new NumberViewHolder(view);
 
 
+        // COMPLETED (15) Increment viewHolderCount and log its value
+        viewHolderCount++;
 
-            // COMPLETED (15) Increment viewHolderCount and log its value
-            viewHolderCount++;
-
-            Log.d(TAG, "#####" + viewHolderCount);
-            //Log.d(TAG, "onCreateViewHolder: number of ViewHolders created: "
-            //   + viewHolderCount);
-            return viewHolder;
-
+        Log.d(TAG, "#####" + viewHolderCount);
+        //Log.d(TAG, "onCreateViewHolder: number of ViewHolders created: "
+        //   + viewHolderCount);
+        return viewHolder;
 
 
     }
-
-
 
 
     /**
@@ -121,9 +116,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
      * indices in the list for this particular position, using the "position" argument that is conveniently
      * passed into us.
      *
-     * @param viewHolder   The ViewHolder which should be updated to represent the contents of the
-     *                 item at the given position in the data set.
-     * @param position The position of the item within the adapter's data set.
+     * @param viewHolder The ViewHolder which should be updated to represent the contents of the
+     *                   item at the given position in the data set.
+     * @param position   The position of the item within the adapter's data set.
      */
     @Override
     public void onBindViewHolder(NumberViewHolder viewHolder, int position) {
@@ -136,11 +131,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
         // viewHolder.viewHolderIndex.setText("ViewHolder index: " + viewHolderCount);
         viewHolder.txtJuduk.setText(dir.getTitle());
 
+        String caret = dir.getVote_average();
 
-        viewHolder.txtCaret.setText(dir.getVote_average() + " / " + dir.getRelease_date().substring(0,4) );
+        if (dir.getRelease_date().length() >= 4) {
+            caret += " / " + dir.getRelease_date().substring(0, 4);
+        }
 
-        String image = "http://image.tmdb.org/t/p/w500" + dir.getPoster_path();
-       // Log.e("image", image);
+        viewHolder.txtCaret.setText(caret);
+
+        String image = "http://image.tmdb.org/t/p/w342" + dir.getPoster_path();
+        // Log.e("image", image);
         Picasso.with(activity)
                 .load(image)
                 .placeholder(R.drawable.poster_placeholder)
@@ -180,8 +180,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
         dirItems = weatherData;
         notifyDataSetChanged();
     }
-
-
 
 
     /**
@@ -231,7 +229,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
         @Override
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
-           // String weatherForDay = dir.getTitle();
+            // String weatherForDay = dir.getTitle();
             mClickHandler.onClick(dirItems.get(adapterPosition));
         }
     }

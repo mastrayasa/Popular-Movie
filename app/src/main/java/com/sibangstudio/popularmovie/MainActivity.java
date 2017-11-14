@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -48,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
     private final static String LOG_TAG = MainActivity.class.getSimpleName();
 
+    private final static String MODE_POPULAR = "popular";
+    private final static String MODE_TOP_RATING = "rating";
+    private final static String MODE_FAVORITE = "favorite";
+
     /*
      * References to RecyclerView and Adapter to reset the list to its
      * "pretty" state when the reset menu item is clicked.
@@ -68,11 +71,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     JSONArray jArray = null;
     JSONObject resultRoot = null;
     JSONObject json_data = null;
-    JSONObject json_Detail = null;
+    //JSONObject json_Detail = null;
 
     private int page = 1;
 
-    String mode = "popular";
+    String mode = MODE_POPULAR;
+
+    GridLayoutManager layoutGrid3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
         GridLayoutManager layoutGrid = new GridLayoutManager(this, 2);
 
+
+
         mRecyclerView.setLayoutManager(layoutGrid);
 
         /*
@@ -136,16 +143,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
             public void onLoadMore() {
                 Log.e(LOG_TAG, "Load More " + page);
 
-                if (mode.equals("popular")) {
-                    loadPopularMovie();
-                } else if (mode.equals("rating")) {
-                    loadMovieByRating();
-                }
+                loadMovies();
+
             }
         });
 
 
-        loadPopularMovie();
+        loadMovies();
 
 
         // Create a DB helper (this will create the DB if run for the first time)
@@ -158,10 +162,23 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     }
 
 
+    public void loadMovies() {
+
+        if (mode.equals( MODE_POPULAR )) {
+            loadPopularMovie();
+        } else if (mode.equals(MODE_TOP_RATING)) {
+            loadMovieByRating();
+        } else if (mode.equals(MODE_FAVORITE)) {
+            loadFavoriteMovies();
+        }
+    }
+
+
     private void loadPopularMovie() {
 
-        mode = "popular";
+        mode = MODE_POPULAR;
 
+        //http://api.themoviedb.org/3/movie/popular?api_key=###&page=1
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath("movie")
                 .appendPath("popular")
@@ -174,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
     private void loadMovieByRating() {
 
-        mode = "rating";
+        mode = MODE_TOP_RATING;
 
         //http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=###&page=1
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
@@ -228,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
      */
     public void loadFavoriteMovies() {
 
-        mode = "favorite";
+        mode = MODE_FAVORITE;
 
         showDirDataView();
 
@@ -351,33 +368,35 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         int id = item.getItemId();
 
         if (id == R.id.action_sort_by_popular) {
-            if (!mode.equals("popular")) {
-
+            if (!mode.equals( MODE_POPULAR )) {
+                mode = MODE_POPULAR;
                 setTitle(getResources().getString(R.string.app_name));
-
                 mAdapter.clearData();
                 page = 1;
-                loadPopularMovie();
+                loadMovies();
                 return true;
             }
         } else if (id == R.id.action_sort_by_rating) {
 
-            if (!mode.equals("rating")) {
-
+            if (!mode.equals(MODE_TOP_RATING)) {
+                mode = MODE_TOP_RATING;
                 setTitle(getResources().getString(R.string.titleRating));
-
                 mAdapter.clearData();
                 page = 1;
-                loadMovieByRating();
+                loadMovies();
                 return true;
             }
+
         } else if (id == R.id.action_sort_by_favorite) {
-            mAdapter.clearData();
 
-            setTitle(getResources().getString(R.string.titleFavorite));
-
-            loadFavoriteMovies();
-            return true;
+            if (!mode.equals(MODE_FAVORITE)) {
+                mode = MODE_FAVORITE;
+                setTitle(getResources().getString(R.string.titleFavorite));
+                mAdapter.clearData();
+                page = 1;
+                loadMovies();
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -390,13 +409,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         page = 1;
         swipe.setRefreshing(false);
 
-        if (mode.equals("popular")) {
-            loadPopularMovie();
-        } else if (mode.equals("rating")) {
-            loadMovieByRating();
-        } else {
-            loadFavoriteMovies();
-        }
+        loadMovies();
 
     }
 
