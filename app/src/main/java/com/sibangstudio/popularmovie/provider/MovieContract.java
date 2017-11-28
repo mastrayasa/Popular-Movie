@@ -1,5 +1,6 @@
-package com.sibangstudio.popularmovie.data;
+package com.sibangstudio.popularmovie.provider;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
@@ -8,17 +9,13 @@ import android.provider.BaseColumns;
 
 public class MovieContract  {
 
-
-    /*private String vote_average;
-    private String title;
-    private String popularity;
-    private String poster_path;
-    private String original_title;
-    private String backdrop_path;
-    private String overview;
-    private String release_date;*/
+    public static final String CONTENT_AUTHORITY = "com.sibangstudio.popularmovie";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    private static final String PATH_MOVIES = "movies";
 
     public static final class MovieEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIES).build();
 
         public static final String TABLE_NAME = "movies";
 
@@ -34,5 +31,15 @@ public class MovieContract  {
         public static final String COLUMN_TIMESTAMP = "timestamp";
 
 
+        static Uri buildMovieUri(String movieId) {
+            return CONTENT_URI.buildUpon().appendPath(movieId).build();
+        }
+
+        public static String getMovieId(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
     }
+
+
 }

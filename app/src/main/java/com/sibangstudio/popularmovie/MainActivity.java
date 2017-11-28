@@ -6,6 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -27,10 +30,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.sibangstudio.popularmovie.adapter.MovieAdapter;
-import com.sibangstudio.popularmovie.data.MovieContract;
 import com.sibangstudio.popularmovie.data.MovieData;
-import com.sibangstudio.popularmovie.data.MovieDbHelper;
 import com.sibangstudio.popularmovie.helper.MyFunction;
+import com.sibangstudio.popularmovie.provider.MovieContract;
+import com.sibangstudio.popularmovie.provider.MovieDbHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,17 +42,18 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler, SwipeRefreshLayout.OnRefreshListener ,
+        LoaderManager.LoaderCallbacks<Cursor>{
 
-    //final static String BASE_URL = "http://api.themoviedb.org/3/";
 
-    //final static String API_KEY = "b5481a85cbb44c13c6c6931834845104";
 
     private final static String LOG_TAG = MainActivity.class.getSimpleName();
 
     private final static String MODE_POPULAR = "popular";
     private final static String MODE_TOP_RATING = "rating";
     private final static String MODE_FAVORITE = "favorite";
+
+    private static final int TASK_LOADER_ID = 0;
 
     /*
      * References to RecyclerView and Adapter to reset the list to its
@@ -169,7 +173,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         } else if (mode.equals(MODE_TOP_RATING)) {
             loadMovieByRating();
         } else if (mode.equals(MODE_FAVORITE)) {
-            loadFavoriteMovies();
+            getSupportLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+           // loadFavoriteMovies();
         }
     }
 
@@ -296,6 +301,53 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
             cursor.close();
         } else {
             Log.e(LOG_TAG, "cursor null");
+        }
+    }
+
+
+
+    public void loadFavoriteMovies2(Cursor cursor) {
+
+        mode = MODE_FAVORITE;
+
+        showDirDataView();
+
+
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+
+                mAdapter.clearData();
+
+                do {
+
+
+                    MovieData movie = new MovieData();
+                    movie.setId(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ID)));
+                    movie.setVote_average(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE)));
+                    movie.setTitle(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+                    movie.setPopularity(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POPULARITY)));
+                    movie.setPoster_path(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POASTER_PATH)));
+                    movie.setOriginal_title(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE)));
+                    movie.setBackdrop_path(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)));
+                    movie.setOverview(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
+                    movie.setRelease_date(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
+
+                    dirList.add(movie);
+
+                    Log.e(LOG_TAG, "add dir");
+
+                } while (cursor.moveToNext());
+
+                mAdapter.setDirData(dirList);
+
+            } else {
+                Log.e(LOG_TAG, "no move");
+                showErrorMessage("Anda belum memilih film favorit anda");
+            }
+            cursor.close();
+        } else {
+            Log.e(LOG_TAG, "cursor null 2");
         }
     }
 
@@ -446,4 +498,63 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     }
 
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new AsyncTaskLoader<Cursor>(this) {
+
+            // Initialize a Cursor, this will hold all the task data
+            Cursor mTaskData = null;
+
+            // onStartLoading() is called when a loader first starts loading data
+            @Override
+            protected void onStartLoading() {
+                if (mTaskData != null) {
+                    // Delivers any previously loaded data immediately
+                    deliverResult(mTaskData);
+                } else {
+                    // Force a new load
+                    forceLoad();
+                }
+            }
+
+            // loadInBackground() performs asynchronous loading of data
+            @Override
+            public Cursor loadInBackground() {
+                // Will implement to load data
+
+                // COMPLETED (5) Query and load all task data in the background; sort by priority
+                // [Hint] use a try/catch block to catch any errors in loading data
+
+                try {
+                    return getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            MovieContract.MovieEntry.COLUMN_TIMESTAMP);
+
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "Failed to asynchronously load data.");
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            // deliverResult sends the result of the load, a Cursor, to the registered listener
+            public void deliverResult(Cursor data) {
+                mTaskData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        loadFavoriteMovies2(data);
+        Log.e(LOG_TAG, "222222222222222222222222222222222222222222222222");
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 }

@@ -22,6 +22,14 @@
             android:name=".MovieDetail"
             android:label="@string/title_activity_movie_detail"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <!-- Register the TaskContentProvider -->
+        <!-- Set name, authorities, and exported attributes -->
+        <!-- exported = false limits access to this ContentProvider to only this app -->
+        <provider
+            android:name="com.sibangstudio.popularmovie.provider.TmdbProvider"
+            android:authorities="com.sibangstudio.popularmovie"
+            android:exported="false"/>
     </application>
 
 </manifest>
