@@ -41,9 +41,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.DirAdapterOnClickHandler, SwipeRefreshLayout.OnRefreshListener {
 
-    final static String BASE_URL = "http://api.themoviedb.org/3/";
+    //final static String BASE_URL = "http://api.themoviedb.org/3/";
 
-    final static String API_KEY = "b5481a85cbb44c13c6c6931834845104";
+    //final static String API_KEY = "b5481a85cbb44c13c6c6931834845104";
 
     private final static String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -179,10 +179,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         mode = MODE_POPULAR;
 
         //http://api.themoviedb.org/3/movie/popular?api_key=###&page=1
-        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse( BuildConfig.TMDB_BASE_URL).buildUpon()
                 .appendPath("movie")
                 .appendPath("popular")
-                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter("api_key", BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter("page", String.valueOf(page))
                 .build();
 
@@ -194,11 +194,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         mode = MODE_TOP_RATING;
 
         //http://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc&api_key=###&page=1
-        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(BuildConfig.TMDB_BASE_URL).buildUpon()
                 .appendPath("discover")
                 .appendPath("movie")
                 .appendQueryParameter("sort_by", "vote_average.desc")
-                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter("api_key", BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter("page", String.valueOf(page))
                 .build();
 
