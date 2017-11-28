@@ -392,6 +392,69 @@ public class MovieDetail extends AppCompatActivity implements TrailerAdapter.Dir
     }
 
 
+
+
+
+    private void saveMovieToFavorite2(MovieData data, View view) {
+
+
+        Log.e(LOG_TAG, "Save movie to Favorite");
+
+      /* mDb.query(
+                MovieContract.MovieEntry.TABLE_NAME,
+                null,
+                MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE + "=?",
+                new String[]{data.getOriginal_title()},
+                null,
+                null,
+                null
+        );*/
+
+
+        Cursor cursor =  getContentResolver().query(MovieContract.MovieEntry.buildMovieUri( data.getId()),
+                null,
+                null,
+                null,
+                null);
+
+
+        if (cursor != null) {
+
+            if (!(cursor.moveToFirst()) || cursor.getCount() == 0) {
+
+                ContentValues cv = new ContentValues();
+                cv.put(MovieContract.MovieEntry.COLUMN_ID, data.getId());
+                cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, data.getVote_average());
+                cv.put(MovieContract.MovieEntry.COLUMN_TITLE, data.getTitle());
+                cv.put(MovieContract.MovieEntry.COLUMN_POPULARITY, data.getPopularity());
+                cv.put(MovieContract.MovieEntry.COLUMN_POASTER_PATH, data.getPoster_path());
+                cv.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITILE, data.getOriginal_title());
+                cv.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, data.getBackdrop_path());
+                cv.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, data.getOverview());
+                cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, data.getRelease_date());
+
+
+                // Insert the content values via a ContentResolver
+                Uri uri = getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, cv);
+
+                // COMPLETED (8) Display the URI that's returned with a Toast
+                // [Hint] Don't forget to call finish() to return to MainActivity after this insert is complete
+                if(uri != null) {
+                    Snackbar.make(view, getResources().getString(R.string.saveToFavorite), Snackbar.LENGTH_SHORT)
+                            .setAction("Action", null).show();
+                }
+
+            } else {
+                Snackbar.make(view, getResources().getString(R.string.alreadyOnFavorite), Snackbar.LENGTH_SHORT)
+                        .setAction("Action", null).show();
+            }
+
+
+        }
+
+
+    }
+
     private void saveMovieToFavorite(MovieData data, View view) {
 
 

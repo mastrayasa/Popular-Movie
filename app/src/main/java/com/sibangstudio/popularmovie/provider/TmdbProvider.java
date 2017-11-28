@@ -8,9 +8,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
-import static com.sibangstudio.popularmovie.provider.MovieContract.CONTENT_AUTHORITY;
 import static com.sibangstudio.popularmovie.provider.MovieContract.BASE_CONTENT_URI;
+import static com.sibangstudio.popularmovie.provider.MovieContract.CONTENT_AUTHORITY;
 
 /**
  * Created by ibti on 11/28/17.
@@ -49,6 +50,7 @@ public class TmdbProvider extends ContentProvider {
         final SQLiteDatabase db = moviedbHelper.getWritableDatabase();
         final int match = URI_MATCHER.match(uri);
 
+Log.e("query", String.valueOf(match));
         Cursor query ;
 
         switch (match) {
@@ -61,10 +63,38 @@ public class TmdbProvider extends ContentProvider {
                         null,
                         sortOrder);
 
+
+
                 break ;
+
+            case MOVIES_ID :
+                // Get the id from the URI
+                String id = uri.getPathSegments().get(1);
+
+                Log.e("id",id);
+
+                // Selection is the _ID column = ?, and the Selection args = the row ID from the URI
+                String mSelection = "id=?";
+                String[] mSelectionArgs = new String[]{id};
+
+                query = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+
+
+
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown insert uri " + uri);
+
+
         }
+
+
 
         query.setNotificationUri(getContext().getContentResolver(), uri);
         return query;

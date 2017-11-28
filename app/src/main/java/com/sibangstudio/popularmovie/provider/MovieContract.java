@@ -31,7 +31,7 @@ public class MovieContract  {
         public static final String COLUMN_TIMESTAMP = "timestamp";
 
 
-        static Uri buildMovieUri(String movieId) {
+        public static Uri buildMovieUri(String movieId) {
             return CONTENT_URI.buildUpon().appendPath(movieId).build();
         }
 

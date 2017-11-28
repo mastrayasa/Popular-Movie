@@ -526,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
                 // [Hint] use a try/catch block to catch any errors in loading data
 
                 try {
-                    return getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+                    return getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI ,
                             null,
                             null,
                             null,
