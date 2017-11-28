@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
 
     private static final int TASK_LOADER_ID = 0;
 
+    private Boolean isInitLoader = false;
+
     /*
      * References to RecyclerView and Adapter to reset the list to its
      * "pretty" state when the reset menu item is clicked.
@@ -173,8 +175,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         } else if (mode.equals(MODE_TOP_RATING)) {
             loadMovieByRating();
         } else if (mode.equals(MODE_FAVORITE)) {
-            getSupportLoaderManager().initLoader(TASK_LOADER_ID, null, this);
-           // loadFavoriteMovies();
+           loadFavoriteMovies();
         }
     }
 
@@ -250,7 +251,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
      */
     public void loadFavoriteMovies() {
 
-        mode = MODE_FAVORITE;
+        if( isInitLoader == false){
+            getSupportLoaderManager().initLoader(TASK_LOADER_ID, null, this);
+            isInitLoader = true;
+        }else {
+            getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, this);
+        }
+
+        /*mode = MODE_FAVORITE;
 
         showDirDataView();
 
@@ -301,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
             cursor.close();
         } else {
             Log.e(LOG_TAG, "cursor null");
-        }
+        }*/
     }
 
 
