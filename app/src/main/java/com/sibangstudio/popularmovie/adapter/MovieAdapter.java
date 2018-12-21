@@ -182,6 +182,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.NumberViewHo
     }
 
 
+
+
     /**
      * Cache of the children views for a list item.
      */

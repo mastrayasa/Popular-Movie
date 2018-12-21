@@ -1,19 +1,23 @@
 package com.sibangstudio.popularmovie;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,10 +56,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     private final static String MODE_POPULAR = "popular";
     private final static String MODE_TOP_RATING = "rating";
     private final static String MODE_FAVORITE = "favorite";
+    private final static String MODE_SEARCH = "search";
 
     private static final int TASK_LOADER_ID = 0;
 
     private Boolean isInitLoader = false;
+
+    private MenuItem searchItem;
 
     /*
      * References to RecyclerView and Adapter to reset the list to its
@@ -82,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
     private int page = 1;
 
     String mode = MODE_POPULAR;
+
+    String query;
 
     GridLayoutManager layoutGrid3;
 
@@ -175,8 +184,34 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         } else if (mode.equals(MODE_TOP_RATING)) {
             loadMovieByRating();
         } else if (mode.equals(MODE_FAVORITE)) {
-           loadFavoriteMovies();
+            loadFavoriteMovies();
         }
+        else if (mode.equals(MODE_SEARCH)) {
+            loadSearchPopularMovie(query);
+        }
+    }
+
+
+
+
+    private void loadSearchPopularMovie(String q) {
+
+        mode = MODE_SEARCH;
+
+
+
+        //http://api.themoviedb.org/3/movie/popular?api_key=###&page=1
+        Uri builtUri = Uri.parse( BuildConfig.TMDB_BASE_URL).buildUpon()
+                .appendPath("search")
+                .appendPath("movie")
+                .appendQueryParameter("api_key", BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter("page", String.valueOf(page))
+                .appendQueryParameter("query", String.valueOf(q))
+                .build();
+
+        loadMovieData(builtUri.toString());
+
+        Log.e("Kangmas", builtUri.toString() );
     }
 
 
@@ -420,8 +455,69 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.DirA
         /* Use the inflater's inflate method to inflate our menu layout to this menu */
         inflater.inflate(R.menu.main, menu);
         /* Return true so that the menu is displayed in the Toolbar */
+
+
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
+        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+
+        searchItem = menu.findItem(R.id.action_search);
+        searchItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                openKeyboard();
+                return true;
+            }
+        });
+
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+
+                Toast.makeText(getBaseContext(), s, Toast.LENGTH_LONG)
+                        .show();
+
+
+                mode = MODE_SEARCH;
+                mAdapter.clearData();
+                page = 1;
+query = s;
+                loadSearchPopularMovie(s);
+
+                //Intent ed = new Intent(Utama.this, SearchActivity.class);
+               // ed.putExtra("query", s  );
+
+               // startActivity(ed);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                /*Toast.makeText(getBaseContext(), "Text :" + newText, Toast.LENGTH_LONG)
+                        .show();
+                Log.e("cari",newText);*/
+                return false;
+            }
+        });
         return true;
     }
+
+    private void openKeyboard() {
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                // mSearchView.getSearchView().dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0, 0, 0));
+                //mSearchView.getSearchView().dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 0, 0, 0));
+            }
+        }, 200);
+    }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
